@@ -35,15 +35,18 @@ from trainer.trainer import QTrainer
 from utils.helper import plot
 
 class QAgent:
-    def __init__(self, n_games, epsilon, gamma):
+    def __init__(self, n_games, epsilon, gamma, train_manual=False):
         self.n_games = n_games
         self.epsilon = epsilon
         self.gamma = gamma
         self.memory = deque(maxlen=100000)
         self.model = QNetwork()
-        self.trainer = QTrainer(self.model, lr=0.012, gamma=self.gamma)
+        self.trainer = QTrainer(self.model, lr=0.05, gamma=self.gamma)
         self.total_wins = 0
         self.total_losses = 0
+        self.model.load_state_dict(torch.load("model_2.pth"))
+        # self.model.load_state_dict(torch.load("model.pth")) if not train_manual else self.model.load_state_dict(torch.load("model_2.pth"))
+        self.train_manual = train_manual
         torch.manual_seed(42)
         np.random.seed(42)
 
@@ -52,8 +55,7 @@ class QAgent:
 
     def get_action(self, state):
         if random.random() < self.epsilon:
-            rand_int = random.randint(0, 24)
-            return rand_int if rand_int != 0 else 1
+            return random.randint(1, 25) if not self.train_manual else random.randint(0, 24)
         else:
             state = torch.tensor(state, dtype=torch.float)
             return torch.argmax(self.model(state)).item()
@@ -84,7 +86,7 @@ class QAgent:
         mean_scores = []
         total_wins = 0
         total_losses = 0
-        if withModel:
+        if withModel and not self.train_manual:
             self.model.load_state_dict(torch.load("model.pth"))
         for i in range(self.n_games):
             self.game = MinesweeperGame()
@@ -114,11 +116,14 @@ class QAgent:
             plot(scores, mean_scores)
             print(f"Game {i} Score: {score} Mean Score: {mean_score} Wins: {total_wins} Losses: {total_losses}")
             self.train(100)
-        torch.save(self.model.state_dict(), "model.pth")
+            
+        if not self.train_manual:
+            torch.save(self.model.state_dict(), "model.pth")
+        elif self.train_manual:
+            torch.save(self.model.state_dict(), "model_2.pth")
         
     def init_game(self, state):
-        # Load model
-        self.model.load_state_dict(torch.load("model.pth"))
+       
         # Load initial state
         self.state = np.array(state)
        

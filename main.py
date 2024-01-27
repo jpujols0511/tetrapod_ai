@@ -3,24 +3,14 @@
 # The main function will be used to run the program.
 # The program will be run using the main function.
 
-# import agent.agent as agent
-
-# def main():
-#     n_games = 1000
-#     epsilon = 0.9
-#     gamma = 0.99
-#     batch_size = 1000
-#     game = agent.QAgent(n_games, epsilon, gamma)
-#     game.play(True)
-    
-# if __name__ == "__main__":
-#     main()
 
 
 import asyncio
 import websockets
 import json
 from agent.agent import QAgent
+
+#@todo - train the model while is playing with the website (currently not being trained)
 
 async def hello(websocket, path):
     while True:
@@ -32,13 +22,17 @@ async def hello(websocket, path):
             gamma = 0.99
             n_games = json_data['games']
             game = QAgent(n_games, epsilon, gamma)
+            
+            if json_data['game_number'] > json_data['games']:
+                print(f"Terminated")
+                break
         
             # Init the game        
             if(json_data['type'] == 'new_game' and json_data['playing'] == False):
                 json_data['playing'] = True
                 await websocket.send(json.dumps(json_data))
                 
-            while json_data['game_number'] < json_data['games']:
+            while json_data['game_number'] <= json_data['games']:
                 try:
                     
                     json_data = json.loads(await websocket.recv())
@@ -64,13 +58,7 @@ async def hello(websocket, path):
                 except:
                     print(f"Terminated")
                     break
-                    
-            if json_data['game_number'] == json_data['games']:
-                print(f"Terminated")
-                break
-            # if json_data['over'] == True:
-            #     break    
-            
+                
             
         except websockets.ConnectionClosed:
             print(f"Terminated")
@@ -83,3 +71,15 @@ asyncio.get_event_loop().run_until_complete(start_server)
 asyncio.get_event_loop().run_forever()
 
 
+# import agent.agent as agent
+
+# def main():
+#     n_games = 2500
+#     epsilon = 0.9
+#     gamma = 0.99
+#     batch_size = 1000
+#     game = agent.QAgent(n_games, epsilon, gamma, True)
+#     game.play(True)
+    
+# if __name__ == "__main__":
+#     main()

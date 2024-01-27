@@ -10,6 +10,14 @@ const timeout = 5000;
 
 const socket = new WebSocket('ws://localhost:8080');
 
+const defaultGameState = [
+    0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0
+];
+
 (async () => {
     const config = {
         type: "new_game",
@@ -31,7 +39,9 @@ const socket = new WebSocket('ws://localhost:8080');
         playing_auto: false,
         balance: 0,
         move: null,
-        state: []
+        state: defaultGameState,
+        wins: 0,
+        looses: 0
     }
 
 
@@ -88,21 +98,15 @@ const socket = new WebSocket('ws://localhost:8080');
     async function processMessage(data) {
         
         // Start game
-        if (data.playing === true && data.over === true) {
+        if (data.playing === true && data.over === true && data.game_number <= data.games) {
            
             console.log('playing game....')
             // Click on bet
+            await new Promise(r => setTimeout(r, 1500))
+            await page.click('.game-sidebar > *:nth-child(4)', { delay: 2000, count: 3 })
             await new Promise(r => setTimeout(r, 2000))
-            await page.click('.game-sidebar > *:nth-child(4)', { delay: 3000, count: 3 })
-            await new Promise(r => setTimeout(r, 3000))
 
-            // Get game state
-            const gameState = await getGameState()
-
-            data.state = [0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0,
-                0];
+            data.state = [...defaultGameState];
 
             data.game_number += 1;
 
@@ -116,13 +120,13 @@ const socket = new WebSocket('ws://localhost:8080');
         
         
         // Game in progress
-        if (data.playing === true && !!data.state && data.game_number > 0 && data.over === false) {
+        if (data.playing === true && !!data.state && data.game_number > 0 && data.over === false && data.game_number <= data.games) {
             if(!!data.move){
                 console.log('Placing tile.... at ' + data['move'])
                 // Click on tile
                 await page.click(`.game-content > div:nth-child(1) > button:nth-child(${data['move']}) > div:nth-child(1)`, { delay: 2000 })
 
-                await new Promise(r => setTimeout(r, 3000));
+                await new Promise(r => setTimeout(r, 2000));
 
                 const reward =  await page.$eval(`.game-content > div:nth-child(1) > button:nth-child(${data['move']})`, (el) => {   
                     return el.getAttribute('class').includes('idle') ? 0 : el.getAttribute('class').includes('mine') ? -1 : el.getAttribute('class').includes('gem') ? 1 : 0
@@ -140,12 +144,14 @@ const socket = new WebSocket('ws://localhost:8080');
                     if (data.gems === 3) {
                         data.cashout= true;
                         data.over = true;
-                        data.state = [];
+                        data.state = [...defaultGameState];
+                        data.wins += 1;
                     }
                 } else if (data.reward === -1){
                     data.over = true;
                     data.mines += 1;
-                    data.state = [];
+                    data.state = [...defaultGameState];
+                    data.looses += 1;
                 }
 
                 if(data.cashout === true){

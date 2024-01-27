@@ -2,4 +2,6 @@ node_modules
 __pycache__
 .env
 model.pth
+model_2.pth
 screenshot.jpg
+cookies.json
