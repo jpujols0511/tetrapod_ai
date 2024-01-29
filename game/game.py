@@ -26,7 +26,7 @@ class MinesweeperGame:
         self.n_mines = 3
         self.n_gems = 25 - self.n_mines 
         self.n_cells_uncovered = 0
-        self.n_cells_to_uncover = 3
+        self.n_cells_to_uncover = 1
         self.reward = 0
         self.positions = [(x, y) for x in range(5) for y in range(5)]
         self.shuffled_positions = self.fisher_yates_shuffle(self.positions)

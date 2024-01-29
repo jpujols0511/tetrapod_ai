@@ -5,7 +5,6 @@ import WebSocket from 'ws';
 
 puppeteer.use(StealthPlugin());
 
-// const url = process.argv[2];
 const timeout = 5000;
 
 const socket = new WebSocket('ws://localhost:8080');
@@ -23,7 +22,7 @@ const defaultGameState = [
         type: "new_game",
         reward: null,
         game: "mines",
-        games: 3,
+        games: 10,
         game_number: 0,
         bet: 0,
         betActive: false,
@@ -98,7 +97,7 @@ const defaultGameState = [
     async function processMessage(data) {
         
         // Start game
-        if (data.playing === true && data.over === true && data.game_number <= data.games) {
+        if (data.playing === true && data.over === true && data.game_number < data.games) {
            
             console.log('playing game....')
             // Click on bet
@@ -117,7 +116,6 @@ const defaultGameState = [
             await socket.send(JSON.stringify(data));
 
         }
-        
         
         // Game in progress
         if (data.playing === true && !!data.state && data.game_number > 0 && data.over === false && data.game_number <= data.games) {
@@ -141,7 +139,7 @@ const defaultGameState = [
                 if (data.reward === 1){
                     data.gems = data.state.filter((e) => e === 1).length;
 
-                    if (data.gems === 3) {
+                    if (data.gems === 1) {
                         data.cashout= true;
                         data.over = true;
                         data.state = [...defaultGameState];
@@ -207,7 +205,7 @@ const defaultGameState = [
         console.log('Connection closed');
 
         await page.screenshot({
-            path: "screenshot.jpg",
+            path: "../../screenshots/screenshot.jpg",
             fullPage: true,
         });
 

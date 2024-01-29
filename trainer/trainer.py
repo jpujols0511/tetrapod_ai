@@ -16,6 +16,10 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
+import matplotlib.pyplot as plt
+
+# Qlearning -> Reinforcement Learning - Machine Learning 
+
 
 class QTrainer:
     def __init__(self, model, lr, gamma):
@@ -24,7 +28,10 @@ class QTrainer:
         self.gamma = gamma
         self.optimizer = optim.Adam(model.parameters(), lr=self.lr)
         self.criterion = nn.MSELoss()
+        self.losses = []
+        print(f'Parameters {model.parameters()}')
 
+    
     def train_step(self, states, actions, rewards, next_states, dones):
         states = torch.tensor(states, dtype=torch.float)
         actions = torch.tensor(actions, dtype=torch.long)
@@ -36,7 +43,15 @@ class QTrainer:
         next_q_values = self.model(next_states).max(1)[0]
         q_target = rewards + self.gamma * next_q_values * (1 - dones)
         loss = self.criterion(q_values, q_target)
+        self.losses.append(loss.item())  # Store the loss value
         self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()
         
+   
+    
+        
+        
+        
+    
+

@@ -3,5 +3,5 @@ __pycache__
 .env
 model.pth
 model_2.pth
-screenshot.jpg
+screenshots/*
 cookies.json

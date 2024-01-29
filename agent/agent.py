@@ -1,28 +1,3 @@
-
-
-
-# Create a QAgent class in agent.py that will be used to play the game. 
-# The game works as follows:
-# The game is won when the agent uncovers a given amount of cells that may contain gems
-# The game is lost when the agent uncovers a mine
-# The agent can uncover a cell by clicking on it
-# The game is a 5x5 grid of covered tiles that may contain gems or mines
-# The agent can only uncover one tile at a time
-# The agent can only uncover a tile that has not been uncovered yet
-# Once the agent safely uncovers a tile, the tile will be uncovered and the agent will receive a reward of 1 if the tile contains a gem or -1 if the tile contains a mine
-# Once the agent uncovers a mine, the game is over and the agent will receive a reward of -1
-# The agent will receive a reward of 0 for every action that does not result in the game ending
-# The agent will receive a reward of 0 for every action that results in the game ending
-# When the game is over, the game will reveal the location of all the gems and mines
-# Agent will learn from its experiences by using the Q-learning algorithm
-# Agent will learn to predict a cell location that will result in the highest reward
-# Agent will learn to predict a cell location that will result in the lowest reward
-# The agent will start with 10 tokens to bet with
-# The multiplier is based on the reward received for taking an action
-# If the agent uncovers 1 tile containing a gem with 3 mines, the multiplier will be 1.13 times the bet amount
-# If the agent uncovers 2 tiles containing gems with 3 mines, the multiplier will be 1.29 times the bet amount
-# If the agent uncovers 3 tiles containing gems with 3 mines, the multiplier will be 1.48 times the bet amount
-
 # Path: agent.py
         
 import torch
@@ -32,7 +7,7 @@ from collections import deque
 from game.game import MinesweeperGame
 from model.model import QNetwork
 from trainer.trainer import QTrainer
-from utils.helper import plot
+from utils.helper import plot, plot_loss
 
 class QAgent:
     def __init__(self, n_games, epsilon, gamma, train_manual=False):
@@ -113,9 +88,12 @@ class QAgent:
             scores.append(score)
             mean_score = np.mean(scores[::])
             mean_scores.append(mean_score)
-            plot(scores, mean_scores)
+            # plot(scores, mean_scores)
+            if len(self.trainer.losses) > 0:
+                plot_loss(self.trainer.losses)
             print(f"Game {i} Score: {score} Mean Score: {mean_score} Wins: {total_wins} Losses: {total_losses}")
-            self.train(100)
+            self.train(10)
+            
             
         if not self.train_manual:
             torch.save(self.model.state_dict(), "model.pth")
