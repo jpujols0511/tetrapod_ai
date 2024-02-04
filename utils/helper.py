@@ -6,6 +6,7 @@
 import random
 import matplotlib.pyplot as plt
 from IPython import display
+import numpy as np
 
 def plot(scores, mean_scores):
     display.clear_output(wait=True)
@@ -22,15 +23,15 @@ def plot(scores, mean_scores):
     plt.show(block=False)
     plt.pause(.1)
 
-def plot_loss(losses):
+def plot_loss(losses, num_episodes):
     display.clear_output(wait=True)
     display.display(plt.gcf())
     plt.clf()
     plt.title("Training...")
     plt.xlabel("Number of games")
     plt.ylabel("Loss")
+    # plt.ylim(ymin=0)
+    plt.text(num_episodes-1, losses[-1], str(np.amin(losses)))
     plt.plot(losses)
-    plt.ylim(ymin=0)
-    plt.text(len(losses)-1, losses[-1], str(losses[-1]))
-    plt.show(block=False)
-    plt.pause(.1)
+    plt.show()
+  
